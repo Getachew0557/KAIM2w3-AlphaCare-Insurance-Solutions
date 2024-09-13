@@ -24,7 +24,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t my-app-image:latest -f Dockerfile .
-      
+
       - name: Save Docker image
         run: |
           docker save my-app-image:latest -o my-app-image.tar
