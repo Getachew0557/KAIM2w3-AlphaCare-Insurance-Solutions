@@ -17,4 +17,4 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 
 # Run tests by default.
-CMD ["pytest"]
+CMD [CMD ["python", "scripts/main.py"]]
