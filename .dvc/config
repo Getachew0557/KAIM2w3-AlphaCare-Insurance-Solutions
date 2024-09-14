@@ -1,0 +1,6 @@
+[core]
+    remote = localremote
+['remote "gdrive_remote"']
+    url = gdrive://1XYlzyTEuJzcNNwskOcvGiGSHSlyuayTV
+['remote "localremote"']
+    url = C:/Users/getac/Documents/10 Academy/week 3/KAIMW3DVC
