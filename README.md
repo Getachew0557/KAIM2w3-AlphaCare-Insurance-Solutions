@@ -68,6 +68,33 @@ The dataset covers historical insurance claim data from February 2014 to August 
 - Add and commit data to version control.
 - Create a new branch for task-2 and merge necessary changes.
 
+**DVC Setup Instructions**:
+
+1. Initialize DVC:
+
+```bash
+dvc init
+```
+
+2. Configure Remote Storage:
+
+```bash
+dvc remote add -d localremote "C:/Users/getac/Documents/10 Academy/week 3/KAIMW3DVC"
+```
+
+3. Add Data to DVC:
+
+```bash
+dvc add data/MachineLearningRating_v3.txt
+```
+
+4. Commit DVC Changes:
+
+```bash
+git add .dvc/config .dvc/cache data/.gitignore
+git commit -m "Add DVC configuration and data"
+```
+
 ### Task 3: A/B Hypothesis Testing
 
 - **Test Hypotheses**:
