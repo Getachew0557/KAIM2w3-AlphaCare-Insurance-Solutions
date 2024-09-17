@@ -48,12 +48,6 @@ The dataset covers historical insurance claim data from February 2014 to August 
   - Perform EDA to understand the data, identify trends, and detect outliers.
   - Regularly commit changes and document the analysis process.
 
-**Minimum Essentials**:
-
-- Set up a GitHub repository and branch for task-1.
-- Commit work at least three times daily with descriptive messages.
-- Conduct EDA including data summarization, quality assessment, and visualization.
-
 ### Task 2: Data Version Control (DVC)
 
 - **Install and Configure DVC**:
@@ -62,24 +56,18 @@ The dataset covers historical insurance claim data from February 2014 to August 
 - **Data Tracking**:
   - Use DVC to track and manage dataset versions.
 
-**Minimum Essentials**:
-
-- Install DVC and configure local storage.
-- Add and commit data to version control.
-- Create a new branch for task-2 and merge necessary changes.
-
 **DVC Setup Instructions**:
 
 1. Initialize DVC:
 
-```bash
-dvc init
-```
-
+  ```bash
+  dvc init
+  ```
+  
 2. Configure Remote Storage:
 
 ```bash
-dvc remote add -d localremote "C:/Users/getac/Documents/10 Academy/week 3/KAIMW3DVC"
+dvc remote add -d localremote "path/to/your/local-storage/"  #"C:/Users/getac/Documents/10 Academy/week 3/KAIMW3DVC"
 ```
 
 3. Add Data to DVC:
@@ -98,16 +86,13 @@ git commit -m "Add DVC configuration and data"
 ### Task 3: A/B Hypothesis Testing
 
 - **Test Hypotheses**:
-  - Evaluate risk differences across provinces, zip codes, and between genders.
-  - Conduct statistical tests to determine significance.
+  - There are no risk differences across provinces
+  - There are no risk differences between zip codes
+  - There are no significant margin (profit) difference between zip codes 
+  - There are not significant risk difference between Women and Men
 
 - **Data Segmentation and Analysis**:
   - Design and implement A/B tests, segment data, and analyze results.
-
-**Minimum Essentials**:
-
-- Create a branch for task-3.
-- Perform hypothesis testing and document findings.
 
 ### Task 4: Statistical Modeling
 
@@ -118,13 +103,15 @@ git commit -m "Add DVC configuration and data"
   - Implement Linear Regression, Decision Trees, Random Forests, and Gradient Boosting Machines (XGBoost).
 
 - **Model Evaluation and Interpretability**:
-  - Evaluate models using metrics such as accuracy and precision, and analyze feature importance using SHAP or LIME.
+  - Evaluate models using metrics such as accuracy and precision
 
-**Minimum Essentials**:
+- **Feature Importance Analysis**:
+  - Analyze which features are most influential in predicting retention.
 
-- Create a branch for task-4.
-- Build and evaluate models, and analyze feature importance.
+- Use SHAP (SHapley Additive exPlanations) or LIME (Local Interpretable Model-agnostic Explanations) to interpret the model's predictions and understand how individual features influence the outcomes.
 
+- Report comparison between each model performance.
+  
 ## Learning Outcomes
 
 - Develop expertise in managing and analyzing complex datasets.
