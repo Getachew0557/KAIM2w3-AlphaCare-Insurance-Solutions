@@ -38,3 +38,29 @@ def handle_missing_values(df):
 def get_numerical_columns(df):
     return df.select_dtypes(include=['float64', 'int64']).columns.tolist()
 
+def convert_datetime_features(df):
+    # Convert 'TransactionMonth' and 'VehicleIntroDate' to datetime
+    df['TransactionMonth'] = pd.to_datetime(df['TransactionMonth'], errors='coerce')
+    df['VehicleIntroDate'] = pd.to_datetime(df['VehicleIntroDate'], errors='coerce')
+
+    # Extract features from datetime columns
+    df['TransactionMonth_Year'] = df['TransactionMonth'].dt.year
+    df['TransactionMonth_Month'] = df['TransactionMonth'].dt.month
+    df['VehicleIntroDate_Year'] = df['VehicleIntroDate'].dt.year
+    df['VehicleIntroDate_Month'] = df['VehicleIntroDate'].dt.month
+
+    # Drop original datetime columns
+    df = df.drop(columns=['TransactionMonth', 'VehicleIntroDate'])
+
+    return df
+
+def encode_categorical_features(df):
+    # One-hot encode categorical variables
+    categorical_cols = ['NewVehicle', 'AccountType', 'Bank', 'VehicleType', 
+                        'make', 'Model', 'mmcode', 'bodytype']
+    
+    df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
+
+    return df
+
+
