@@ -11,6 +11,7 @@ from visualization import plot_postalcode_premium, plot_premium_vs_claims
 from evaluation import evaluate_model
 from save_model import save_model
 from feature_importance import plot_feature_importance
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from eda import (
     check_missing_values, 
     plot_missing_values, 
@@ -104,41 +105,37 @@ def main():
     y_premium = df['TotalPremium']
     y_claims = df['TotalClaims']
 
-        # Train-Test Split
-    X_train_premium, X_test_premium, y_train_premium, y_test_premium = train_test_split(X, y_premium, test_size=0.2, random_state=42)
-    X_train_claims, X_test_claims, y_train_claims, y_test_claims = train_test_split(X, y_claims, test_size=0.2, random_state=42)
-
     # Train models
-    model_premium_lr = train_linear_regression(X_train_premium, y_train_premium)
-    model_claims_lr = train_linear_regression(X_train_claims, y_train_claims)
-    model_premium_rf = train_random_forest(X_train_premium, y_train_premium)
-    model_claims_rf = train_random_forest(X_train_claims, y_train_claims)
-    model_premium_xgb = train_xgboost(X_train_premium, y_train_premium)
-    model_claims_xgb = train_xgboost(X_train_claims, y_train_claims)
+    models, X_train_premium, X_test_premium, y_train_premium, y_test_premium, X_train_claims, X_test_claims, y_train_claims, y_test_claims = train_all_models(X, y_premium, y_claims)
 
     # Save models
-    save_model(model_premium_lr, 'model_premium_lr.pkl')
-    save_model(model_claims_lr, 'model_claims_lr.pkl')
-    save_model(model_premium_rf, 'model_premium_rf.pkl')
-    save_model(model_claims_rf, 'model_claims_rf.pkl')
-    save_model(model_premium_xgb, 'model_premium_xgb.pkl')
-    save_model(model_claims_xgb, 'model_claims_xgb.pkl')
+    save_model(models['premium_lr'], 'model_premium_lr.pkl')
+    save_model(models['claims_lr'], 'model_claims_lr.pkl')
+    save_model(models['premium_rf'], 'model_premium_rf.pkl')
+    save_model(models['claims_rf'], 'model_claims_rf.pkl')
+    save_model(models['premium_xgb'], 'model_premium_xgb.pkl')
+    save_model(models['claims_xgb'], 'model_claims_xgb.pkl')
+    save_model(models['premium_dt'], 'model_premium_dt.pkl')
+    save_model(models['claims_dt'], 'model_claims_dt.pkl')
 
     # Evaluate models
-    mse_premium_lr, r2_premium_lr = evaluate_model(model_premium_lr, X_test_premium, y_test_premium)
-    mse_claims_lr, r2_claims_lr = evaluate_model(model_claims_lr, X_test_claims, y_test_claims)
-    mse_premium_rf, r2_premium_rf = evaluate_model(model_premium_rf, X_test_premium, y_test_premium)
-    mse_claims_rf, r2_claims_rf = evaluate_model(model_claims_rf, X_test_claims, y_test_claims)
-    mse_premium_xgb, r2_premium_xgb = evaluate_model(model_premium_xgb, X_test_premium, y_test_premium)
-    mse_claims_xgb, r2_claims_xgb = evaluate_model(model_claims_xgb, X_test_claims, y_test_claims)
+    for model_name, model in models.items():
+        if 'premium' in model_name:
+            X_test, y_test = X_test_premium, y_test_premium
+        else:
+            X_test, y_test = X_test_claims, y_test_claims
 
-    print(f"Linear Regression - TotalPremium: MSE={mse_premium_lr}, R^2={r2_premium_lr}")
-    print(f"Linear Regression - TotalClaims: MSE={mse_claims_lr}, R^2={r2_claims_lr}")
-    print(f"Random Forest - TotalPremium: MSE={mse_premium_rf}, R^2={r2_premium_rf}")
-    print(f"Random Forest - TotalClaims: MSE={mse_claims_rf}, R^2={r2_claims_rf}")
-    print(f"XGBoost - TotalPremium: MSE={mse_premium_xgb}, R^2={r2_premium_xgb}")
-    print(f"XGBoost - TotalClaims: MSE={mse_claims_xgb}, R^2={r2_claims_xgb}")
+        y_pred = model.predict(X_test)
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
 
+        print(f"{model_name}: MSE={mse}, MAE={mae}, R^2={r2}")
+
+    # Feature Importance
+    for model_name in ['premium_rf', 'claims_rf', 'premium_xgb', 'claims_xgb']:
+        if model_name in models:
+            plot_feature_importance(models[model_name], X)
     # Feature Importance
     plot_feature_importance(model_premium_rf, X)
     plot_feature_importance(model_claims_rf, X)
