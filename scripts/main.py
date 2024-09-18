@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../note
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 from data_loader import load_data, display_basic_info, print_unique_values
 from visualization import plot_postalcode_premium, plot_premium_vs_claims
-from evaluation import evaluate_model
+from evaluation import evaluate_model, plot_metrics
 from save_model import save_model
 from feature_importance import plot_feature_importance
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
@@ -28,6 +28,7 @@ from data_preprocessing import (
     encode_categorical_features
 )
 from modeling import (
+    split_data, 
     train_linear_regression, 
     train_decision_tree, 
     train_random_forest, 
@@ -105,42 +106,71 @@ def main():
     y_premium = df['TotalPremium']
     y_claims = df['TotalClaims']
 
-    # Train models
-    models, X_train_premium, X_test_premium, y_train_premium, y_test_premium, X_train_claims, X_test_claims, y_train_claims, y_test_claims = train_all_models(X, y_premium, y_claims)
 
-    # Save models
-    save_model(models['premium_lr'], 'model_premium_lr.pkl')
-    save_model(models['claims_lr'], 'model_claims_lr.pkl')
-    save_model(models['premium_rf'], 'model_premium_rf.pkl')
-    save_model(models['claims_rf'], 'model_claims_rf.pkl')
-    save_model(models['premium_xgb'], 'model_premium_xgb.pkl')
-    save_model(models['claims_xgb'], 'model_claims_xgb.pkl')
-    save_model(models['premium_dt'], 'model_premium_dt.pkl')
-    save_model(models['claims_dt'], 'model_claims_dt.pkl')
+    # Split data into train and test sets
+    (X_train_premium, X_test_premium, y_train_premium, y_test_premium, 
+     X_train_claims, X_test_claims, y_train_claims, y_test_claims) = split_data(X, y_premium, y_claims)
+
+    # Train models
+    model_premium_dt = train_decision_tree(X_train_premium, y_train_premium)
+    model_claims_dt = train_decision_tree(X_train_claims, y_train_claims)
+
+    model_premium_lr = train_linear_regression(X_train_premium, y_train_premium)
+    model_claims_lr = train_linear_regression(X_train_claims, y_train_claims)
+
+    model_premium_rf = train_random_forest(X_train_premium, y_train_premium)
+    model_claims_rf = train_random_forest(X_train_claims, y_train_claims)
+
+    model_premium_xgb = train_xgboost(X_train_premium, y_train_premium)
+    model_claims_xgb = train_xgboost(X_train_claims, y_train_claims)
 
     # Evaluate models
-    for model_name, model in models.items():
-        if 'premium' in model_name:
-            X_test, y_test = X_test_premium, y_test_premium
-        else:
-            X_test, y_test = X_test_claims, y_test_claims
+    metrics_premium_dt = evaluate_model(model_premium_dt, X_test_premium, y_test_premium)
+    metrics_claims_dt = evaluate_model(model_claims_dt, X_test_claims, y_test_claims)
 
-        y_pred = model.predict(X_test)
-        mse = mean_squared_error(y_test, y_pred)
-        mae = mean_absolute_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
+    metrics_premium_lr = evaluate_model(model_premium_lr, X_test_premium, y_test_premium)
+    metrics_claims_lr = evaluate_model(model_claims_lr, X_test_claims, y_test_claims)
 
-        print(f"{model_name}: MSE={mse}, MAE={mae}, R^2={r2}")
+    metrics_premium_rf = evaluate_model(model_premium_rf, X_test_premium, y_test_premium)
+    metrics_claims_rf = evaluate_model(model_claims_rf, X_test_claims, y_test_claims)
 
-    # Feature Importance
-    for model_name in ['premium_rf', 'claims_rf', 'premium_xgb', 'claims_xgb']:
-        if model_name in models:
-            plot_feature_importance(models[model_name], X)
-    # Feature Importance
-    plot_feature_importance(model_premium_rf, X)
-    plot_feature_importance(model_claims_rf, X)
-    plot_feature_importance(model_premium_xgb, X)
-    plot_feature_importance(model_claims_xgb, X)
+    metrics_premium_xgb = evaluate_model(model_premium_xgb, X_test_premium, y_test_premium)
+    metrics_claims_xgb = evaluate_model(model_claims_xgb, X_test_claims, y_test_claims)
+
+    # Print the evaluation metrics
+    print(f"Decision Tree - TotalPremium: MSE={metrics_premium_dt[0]}, MAE={metrics_premium_dt[1]}, R²={metrics_premium_dt[2]}")
+    print(f"Decision Tree - TotalClaims: MSE={metrics_claims_dt[0]}, MAE={metrics_claims_dt[1]}, R²={metrics_claims_dt[2]}")
+    print(f"Linear Regression - TotalPremium: MSE={metrics_premium_lr[0]}, MAE={metrics_premium_lr[1]}, R²={metrics_premium_lr[2]}")
+    print(f"Linear Regression - TotalClaims: MSE={metrics_claims_lr[0]}, MAE={metrics_claims_lr[1]}, R²={metrics_claims_lr[2]}")
+    print(f"Random Forest - TotalPremium: MSE={metrics_premium_rf[0]}, MAE={metrics_premium_rf[1]}, R²={metrics_premium_rf[2]}")
+    print(f"Random Forest - TotalClaims: MSE={metrics_claims_rf[0]}, MAE={metrics_claims_rf[1]}, R²={metrics_claims_rf[2]}")
+    print(f"XGBoost - TotalPremium: MSE={metrics_premium_xgb[0]}, MAE={metrics_premium_xgb[1]}, R²={metrics_premium_xgb[2]}")
+    print(f"XGBoost - TotalClaims: MSE={metrics_claims_xgb[0]}, MAE={metrics_claims_xgb[1]}, R²={metrics_claims_xgb[2]}")
+
+    # Save models
+    save_model(model_premium_dt, 'model_premium_dt.pkl')
+    save_model(model_claims_dt, 'model_claims_dt.pkl')
+    save_model(model_premium_lr, 'model_premium_lr.pkl')
+    save_model(model_claims_lr, 'model_claims_lr.pkl')
+    save_model(model_premium_rf, 'model_premium_rf.pkl')
+    save_model(model_claims_rf, 'model_claims_rf.pkl')
+    save_model(model_premium_xgb, 'model_premium_xgb.pkl')
+    save_model(model_claims_xgb, 'model_claims_xgb.pkl')
+
+    # Plot evaluation metrics
+    plot_metrics(
+        [model_premium_dt, model_premium_lr, model_premium_rf, model_premium_xgb], 
+        [metrics_premium_dt, metrics_premium_lr, metrics_premium_rf, metrics_premium_xgb], 
+        ['Decision Tree', 'Linear Regression', 'Random Forest', 'XGBoost']
+    )
+    
+    # Plot feature importances for tree-based models
+    plot_feature_importance(model_premium_dt, X_train_premium)
+    plot_feature_importance(model_claims_dt, X_train_claims)
+    plot_feature_importance(model_premium_rf, X_train_premium)
+    plot_feature_importance(model_claims_rf, X_train_claims)
+    plot_feature_importance(model_premium_xgb, X_train_premium)
+    plot_feature_importance(model_claims_xgb, X_train_claims)
 
 if __name__ == "__main__":
     main()
